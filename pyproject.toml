@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "pydentity-db-sqlalchemy"
+name = "pydentity-db-tortoise"
 version = "1.0.0"
 dependencies = [
     "tortoise-orm>=0.21.5"

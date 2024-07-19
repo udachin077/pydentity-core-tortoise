@@ -19,9 +19,6 @@ class RoleStore(IRoleStore[TRole], Generic[TRole]):
     def create_model_from_dict(self, **kwargs):
         return self.role_model(**kwargs)
 
-    async def save_changes(self):
-        pass
-
     async def refresh(self, role: TRole):
         await role.refresh_from_db(using_db=self.session)
 
@@ -33,7 +30,6 @@ class RoleStore(IRoleStore[TRole], Generic[TRole]):
             raise ArgumentNoneException("role")
 
         await role.save(using_db=self.session)
-        await self.save_changes()
         await self.refresh(role)
         return IdentityResult.success()
 
@@ -43,7 +39,6 @@ class RoleStore(IRoleStore[TRole], Generic[TRole]):
 
         role.concurrency_stamp = uuid4()
         await role.save(using_db=self.session)
-        await self.save_changes()
         await self.refresh(role)
         return IdentityResult.success()
 
@@ -52,7 +47,6 @@ class RoleStore(IRoleStore[TRole], Generic[TRole]):
             raise ArgumentNoneException("role")
 
         await role.delete(using_db=self.session)
-        await self.save_changes()
         return IdentityResult.success()
 
     async def find_by_id(self, role_id: str) -> Optional[TRole]:
