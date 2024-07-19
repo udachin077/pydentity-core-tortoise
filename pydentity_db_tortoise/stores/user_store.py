@@ -58,7 +58,7 @@ class UserStore(
     user_login_model: Type[TUserLogin] = IdentityUserLogin
     user_token_model: Type[TUserToken] = IdentityUserToken
 
-    InternalLoginProvider: Final[str] = "[FastAPIUserStore]"
+    InternalLoginProvider: Final[str] = "[PydentityUserStore]"
     AuthenticatorKeyTokenName: Final[str] = "AuthenticatorKey"
     RecoveryCodeTokenName: Final[str] = "RecoveryCodes"
 
@@ -67,9 +67,6 @@ class UserStore(
 
     def create_model_from_dict(self, **kwargs) -> TUser:
         return self.user_model(**kwargs)
-
-    async def save_changes(self):
-        pass
 
     async def refresh(self, user: TUser):
         await user.refresh_from_db(using_db=self.session)
@@ -82,7 +79,6 @@ class UserStore(
             raise ArgumentNoneException("user")
 
         await user.save(using_db=self.session)
-        await self.save_changes()
         await self.refresh(user)
         return IdentityResult.success()
 
@@ -91,7 +87,6 @@ class UserStore(
             raise ArgumentNoneException("user")
 
         user.concurrency_stamp = str(uuid4())
-        await self.save_changes()
         await self.refresh(user)
         return IdentityResult.success()
 
@@ -100,7 +95,6 @@ class UserStore(
             raise ArgumentNoneException("user")
 
         await user.delete(using_db=self.session)
-        await self.save_changes()
         return IdentityResult.success()
 
     async def find_by_id(self, user_id: str) -> Optional[TUser]:
@@ -337,7 +331,6 @@ class UserStore(
             raise ArgumentNoneException("login")
 
         await self._create_user_login(user, login).save(using_db=self.session)
-        await self.save_changes()
 
     async def find_by_login(self, login_provider: str, provider_key: str) -> Optional[TUser]:
         if not login_provider:
@@ -418,8 +411,6 @@ class UserStore(
             name=name
         )
 
-        await self.save_changes()
-
     async def get_two_factor_enabled(self, user: TUser) -> bool:
         if user is None:
             raise ArgumentNoneException("user")
@@ -479,12 +470,12 @@ class UserStore(
             raise ArgumentNoneException("user")
         if not claims:
             raise ArgumentNoneException("claims")
-        # TODO: if exists - IntegrityError
+
         await self.user_claim_model.bulk_create(
             [self._create_user_claim(user, claim) for claim in claims],
+            update_fields=True,
             using_db=self.session
         )
-        await self.save_changes()
 
     async def get_claims(self, user: TUser) -> list[Claim]:
         if user is None:
@@ -514,8 +505,6 @@ class UserStore(
                 claim_type=claim.type,
                 claim_value=claim.value
             ).using_db(self.session).delete()
-
-        await self.save_changes()
 
     async def replace_claim(self, user: TUser, claim: Claim, new_claim: Claim) -> None:
         if user is None:
