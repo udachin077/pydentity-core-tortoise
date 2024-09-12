@@ -2,7 +2,9 @@ from datetime import datetime
 from typing import Type, Generic, Final, Optional
 from uuid import uuid4
 
-from pydentity.abc.stores import (
+from pydenticore import IdentityResult, UserLoginInfo
+from pydenticore.exc import ArgumentNoneException, InvalidOperationException
+from pydenticore.interfaces.stores import (
     IUserAuthenticationTokenStore,
     IUserAuthenticatorKeyStore,
     IUserClaimStore,
@@ -15,14 +17,11 @@ from pydentity.abc.stores import (
     IUserSecurityStampStore,
     IUserTwoFactorRecoveryCodeStore,
     IUserTwoFactorStore,
-    IUserStore
+    IUserStore,
 )
-from pydentity.exc import ArgumentNoneException, InvalidOperationException
-from pydentity.identity_result import IdentityResult
-from pydentity.resources import Resources
-from pydentity.security.claims import Claim
-from pydentity.types import TRole, TUser, TUserRole, TUserClaim, TUserLogin, TUserToken
-from pydentity.user_login_info import UserLoginInfo
+from pydenticore.resources import Resources
+from pydenticore.security.claims import Claim
+from pydenticore.types import TUser, TRole, TUserRole, TUserLogin, TUserClaim, TUserToken
 from tortoise import BaseDBAsyncClient
 
 from pydentity_db_tortoise.models import (
@@ -31,10 +30,10 @@ from pydentity_db_tortoise.models import (
     IdentityUserRole,
     IdentityUserClaim,
     IdentityUserLogin,
-    IdentityUserToken
+    IdentityUserToken,
 )
 
-__all__ = ('UserStore',)
+__all__ = ("UserStore",)
 
 
 class UserStore(
@@ -60,11 +59,10 @@ class UserStore(
     user_login_model: Type[TUserLogin] = IdentityUserLogin
     user_token_model: Type[TUserToken] = IdentityUserToken
 
-    InternalLoginProvider: Final[str] = '[PydentityUserStore]'
-    AuthenticatorKeyTokenName: Final[str] = 'AuthenticatorKey'
-    RecoveryCodeTokenName: Final[str] = 'RecoveryCodes'
+    INTERNAL_LOGIN_PROVIDER: Final[str] = "[Pydentity:UserStore]"
+    AUTHENTICATOR_KEY_TOKEN_NAME: Final[str] = "[Pydentity:AuthenticatorKey]"
+    RECOVERY_CODE_TOKEN_NAME: Final[str] = "[Pydentity:RecoveryCodes]"
 
-    # TODO: need test
     def __init__(self, transaction: BaseDBAsyncClient = None):
         self.transaction = transaction
 
@@ -428,16 +426,16 @@ class UserStore(
         user.two_factor_enabled = enabled
 
     async def get_authenticator_key(self, user: TUser) -> Optional[str]:
-        return await self.get_token(user, self.InternalLoginProvider, self.AuthenticatorKeyTokenName)
+        return await self.get_token(user, self.INTERNAL_LOGIN_PROVIDER, self.AUTHENTICATOR_KEY_TOKEN_NAME)
 
     async def set_authenticator_key(self, user: TUser, key: str) -> None:
-        return await self.set_token(user, self.InternalLoginProvider, self.AuthenticatorKeyTokenName, key)
+        return await self.set_token(user, self.INTERNAL_LOGIN_PROVIDER, self.AUTHENTICATOR_KEY_TOKEN_NAME, key)
 
     async def count_codes(self, user: TUser) -> int:
         if user is None:
             raise ArgumentNoneException('user')
 
-        merged_codes = (await self.get_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName)) or ''
+        merged_codes = (await self.get_token(user, self.INTERNAL_LOGIN_PROVIDER, self.RECOVERY_CODE_TOKEN_NAME)) or ''
 
         if merged_codes:
             return merged_codes.count(';') + 1
@@ -450,7 +448,7 @@ class UserStore(
         if not code:
             raise ArgumentNoneException('code')
 
-        merged_codes = (await self.get_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName)) or ''
+        merged_codes = (await self.get_token(user, self.INTERNAL_LOGIN_PROVIDER, self.RECOVERY_CODE_TOKEN_NAME)) or ''
         split_codes = merged_codes.split(';')
 
         if code in split_codes:
@@ -467,7 +465,7 @@ class UserStore(
             raise ArgumentNoneException('recovery_codes')
 
         merged_codes = ';'.join(recovery_codes)
-        return await self.set_token(user, self.InternalLoginProvider, self.RecoveryCodeTokenName, merged_codes)
+        return await self.set_token(user, self.INTERNAL_LOGIN_PROVIDER, self.RECOVERY_CODE_TOKEN_NAME, merged_codes)
 
     async def add_claims(self, user: TUser, *claims: Claim) -> None:
         if user is None:

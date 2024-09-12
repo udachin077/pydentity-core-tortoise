@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from pydentity.security.claims import Claim
+from pydenticore.security.claims import Claim
 from tortoise import Tortoise
 from tortoise.exceptions import IntegrityError
 

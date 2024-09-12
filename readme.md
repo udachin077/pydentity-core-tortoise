@@ -1,4 +1,16 @@
+## Install
+
+    pip install pydentity-db-tortoise
+
+or
+
+    pip install pydenticore[tortoise]
+
+## Example
+
+```python
 from tortoise import fields, Tortoise, run_async
+
 from pydentity_db_tortoise.models import *
 
 
@@ -19,3 +31,4 @@ async def main():
 
 if __name__ == '__main__':
     run_async(main())
+```

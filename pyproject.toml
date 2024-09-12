@@ -1,17 +1,26 @@
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-
-[project]
+[tool.poetry]
 name = "pydentity-db-tortoise"
-version = "1.0.0"
-dependencies = [
-    "tortoise-orm>=0.21.5"
+version = "0.1.2"
+description = "Database adapter for TortoiseORM."
+authors = ["udachin077 <pypi.udachin@yandex.ru>"]
+license = "MIT"
+homepage = "https://github.com/udachin077/pydentity-db-tortoise"
+repository = "https://github.com/udachin077/pydentity-db-tortoise.git"
+exclude = [
+    "tests",
+    "example"
 ]
 
-[tool.setuptools.packages.find]
-exclude = [
-    "tests*",
-    "examples*"
-]
+[tool.poetry.dependencies]
+python = "^3.12"
+tortoise-orm = "^0.21.5"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+pytest-asyncio = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from pydentity.types import TKey, GUID
+from pydenticore.types import GUID, TKey
 from tortoise import Model, fields
+
+from pydentity_db_tortoise.models.fields import ProtectedPersonalDataField
 
 __all__ = (
     'Model',
@@ -38,18 +40,18 @@ class AbstractIdentityUser(Model):
     else:
         access_failed_count = fields.IntField(default=0)
         concurrency_stamp = fields.TextField(null=True)
-        email = fields.CharField(256, null=True)
+        email = ProtectedPersonalDataField(256, null=True)
         email_confirmed = fields.BooleanField(default=False)
         lockout_enabled = fields.BooleanField(default=True)
         lockout_end = fields.DatetimeField(null=True)
-        normalized_email = fields.CharField(256, null=True)
-        normalized_username = fields.CharField(256, null=True)
+        normalized_email = ProtectedPersonalDataField(256, null=True)
+        normalized_username = ProtectedPersonalDataField(256, null=True)
         password_hash = fields.TextField(null=True)
-        phone_number = fields.CharField(256, null=True)
+        phone_number = ProtectedPersonalDataField(256, null=True)
         phone_number_confirmed = fields.BooleanField(default=False)
         security_stamp = fields.UUIDField(null=True)
         two_factor_enabled = fields.BooleanField(default=False)
-        username = fields.CharField(256, null=True)
+        username = ProtectedPersonalDataField(256, null=True)
 
         def __str__(self):
             return self.username or self.email or self.id
