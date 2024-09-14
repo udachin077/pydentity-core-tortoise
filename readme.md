@@ -1,10 +1,6 @@
-## Install
+## Installation
 
-    pip install pydentity-db-tortoise
-
-or
-
-    pip install pydenticore[tortoise]
+    $ pip install pydentity-db-tortoise
 
 ## Example
 

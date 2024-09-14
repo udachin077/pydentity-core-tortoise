@@ -8,14 +8,12 @@ from pydenticore.security.claims import Claim
 from pydenticore.types import TRole, TRoleClaim
 from tortoise.backends.base.client import BaseDBAsyncClient
 
-from pydentity_db_tortoise.models import IdentityRole, IdentityRoleClaim
-
 __all__ = ("RoleStore",)
 
 
 class RoleStore(IRoleClaimStore[TRole], IRoleStore[TRole], Generic[TRole]):
-    role_model: Type[TRole] = IdentityRole
-    role_claim_model: Type[TRoleClaim] = IdentityRoleClaim
+    role_model: Type[TRole]
+    role_claim_model: Type[TRoleClaim]
 
     def __init__(self, transaction: BaseDBAsyncClient = None):
         self.transaction = transaction

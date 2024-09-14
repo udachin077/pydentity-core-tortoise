@@ -7,7 +7,7 @@ from pydenticore.security.claims import Claim
 from tortoise import Tortoise
 from tortoise.exceptions import IntegrityError
 
-from pydentity_db_tortoise.models import IdentityRole
+from pydentity_db_tortoise.models import IdentityRole, IdentityRoleClaim
 from pydentity_db_tortoise.stores.role_store import RoleStore
 
 
@@ -18,6 +18,8 @@ async def store() -> AsyncGenerator[RoleStore, None]:
         modules={"models": ["pydentity_db_tortoise.models"]},
     )
     await Tortoise.generate_schemas()
+    RoleStore.role_model = IdentityRole
+    RoleStore.role_claim_model = IdentityRoleClaim
     yield RoleStore()
     await Tortoise.close_connections()
 

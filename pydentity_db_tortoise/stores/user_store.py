@@ -15,23 +15,14 @@ from pydenticore.interfaces.stores import (
     IUserPhoneNumberStore,
     IUserRoleStore,
     IUserSecurityStampStore,
+    IUserStore,
     IUserTwoFactorRecoveryCodeStore,
     IUserTwoFactorStore,
-    IUserStore,
 )
 from pydenticore.resources import Resources
 from pydenticore.security.claims import Claim
 from pydenticore.types import TUser, TRole, TUserRole, TUserLogin, TUserClaim, TUserToken
 from tortoise import BaseDBAsyncClient
-
-from pydentity_db_tortoise.models import (
-    IdentityUser,
-    IdentityRole,
-    IdentityUserRole,
-    IdentityUserClaim,
-    IdentityUserLogin,
-    IdentityUserToken,
-)
 
 __all__ = ("UserStore",)
 
@@ -52,12 +43,12 @@ class UserStore(
     IUserStore[TUser],
     Generic[TUser]
 ):
-    user_model: Type[TUser] = IdentityUser
-    role_model: Type[TRole] = IdentityRole
-    user_role_model: Type[TUserRole] = IdentityUserRole
-    user_claim_model: Type[TUserClaim] = IdentityUserClaim
-    user_login_model: Type[TUserLogin] = IdentityUserLogin
-    user_token_model: Type[TUserToken] = IdentityUserToken
+    user_model: Type[TUser]
+    role_model: Type[TRole]
+    user_role_model: Type[TUserRole]
+    user_claim_model: Type[TUserClaim]
+    user_login_model: Type[TUserLogin]
+    user_token_model: Type[TUserToken]
 
     INTERNAL_LOGIN_PROVIDER: Final[str] = "[Pydentity:UserStore]"
     AUTHENTICATOR_KEY_TOKEN_NAME: Final[str] = "[Pydentity:AuthenticatorKey]"

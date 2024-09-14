@@ -2,19 +2,20 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 from pydenticore.types import GUID, TKey
-from tortoise import Model, fields
+from tortoise import fields
 
-from pydentity_db_tortoise.models.fields import ProtectedPersonalDataField
+from pydentity_db_tortoise.fields import ProtectedPersonalDataField
+from pydentity_db_tortoise.models.base import Model
 
 __all__ = (
-    'Model',
     'AbstractIdentityUser',
     'AbstractIdentityRole',
     'AbstractIdentityUserRole',
     'AbstractIdentityUserClaim',
     'AbstractIdentityRoleClaim',
     'AbstractIdentityUserToken',
-    'AbstractIdentityUserLogin'
+    'AbstractIdentityUserLogin',
+    'Model',
 )
 
 MAX_KEY_LENGTH = 128

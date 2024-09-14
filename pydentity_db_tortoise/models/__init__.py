@@ -1,12 +1,8 @@
 from uuid import uuid4
 
-from pydenticore import DefaultPersonalDataProtector
-from pydenticore.interfaces import IPersonalDataProtector
-from pydenticore.utils import get_device_uuid
 from tortoise import fields as f, indexes
 
 from pydentity_db_tortoise.models.abstract import (
-    Model,
     AbstractIdentityUser,
     AbstractIdentityRole,
     AbstractIdentityUserRole,
@@ -15,25 +11,18 @@ from pydentity_db_tortoise.models.abstract import (
     AbstractIdentityUserToken,
     AbstractIdentityRoleClaim
 )
-from pydentity_db_tortoise.models.fields import ProtectedPersonalDataField
+from pydentity_db_tortoise.models.base import Model
 
 __all__ = (
-    'Model',
-    'IdentityUser',
     'IdentityRole',
-    'IdentityUserRole',
+    'IdentityRoleClaim',
+    'IdentityUser',
     'IdentityUserClaim',
     'IdentityUserLogin',
+    'IdentityUserRole',
     'IdentityUserToken',
-    'IdentityRoleClaim',
-    'use_personal_data_protector',
+    'Model',
 )
-
-
-def use_personal_data_protector(protector: IPersonalDataProtector | None = None):
-    if not protector:
-        protector = DefaultPersonalDataProtector(get_device_uuid())
-    ProtectedPersonalDataField.protector = protector
 
 
 class UniqueIndex(indexes.Index):
@@ -41,6 +30,8 @@ class UniqueIndex(indexes.Index):
 
 
 class IdentityUser(AbstractIdentityUser):
+    """The default implementation of AbstractIdentityUser which uses a string as a primary key."""
+
     id = f.CharField(450, primary_key=True)
     roles: f.ManyToManyRelation['IdentityRole'] = f.ManyToManyField(
         'models.IdentityRole',
@@ -72,6 +63,8 @@ class IdentityUser(AbstractIdentityUser):
 
 
 class IdentityRole(AbstractIdentityRole):
+    """The default implementation of AbstractIdentityRole which uses a string as the primary key."""
+
     id = f.CharField(450, primary_key=True)
     claims: f.ReverseRelation['IdentityRoleClaim']
     users: f.ReverseRelation['IdentityUser']
@@ -92,6 +85,8 @@ class IdentityRole(AbstractIdentityRole):
 
 
 class IdentityUserRole(AbstractIdentityUserRole):
+    """Represents the link between a user and a role."""
+
     user = f.ForeignKeyField(
         'models.IdentityUser',
         to_field='id',
@@ -109,6 +104,8 @@ class IdentityUserRole(AbstractIdentityUserRole):
 
 
 class IdentityUserClaim(AbstractIdentityUserClaim):
+    """Represents a claim that a user possesses."""
+
     user = f.ForeignKeyField(
         'models.IdentityUser',
         to_field='id',
@@ -121,6 +118,8 @@ class IdentityUserClaim(AbstractIdentityUserClaim):
 
 
 class IdentityUserLogin(AbstractIdentityUserLogin):
+    """Represents a login and its associated provider for a user."""
+
     user = f.ForeignKeyField(
         'models.IdentityUser',
         to_field='id',
@@ -137,6 +136,8 @@ class IdentityUserLogin(AbstractIdentityUserLogin):
 
 
 class IdentityUserToken(AbstractIdentityUserToken):
+    """Represents an authentication token for a user."""
+
     user = f.ForeignKeyField(
         'models.IdentityUser',
         to_field='id',
@@ -153,6 +154,8 @@ class IdentityUserToken(AbstractIdentityUserToken):
 
 
 class IdentityRoleClaim(AbstractIdentityRoleClaim):
+    """Represents a claim that is granted to all users within a role."""
+
     role = f.ForeignKeyField(
         'models.IdentityRole',
         to_field='id',
