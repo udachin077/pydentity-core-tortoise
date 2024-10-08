@@ -1,19 +1,24 @@
 from typing import Type, Generic, Optional
 from uuid import uuid4
 
-from pydenticore import IdentityResult
-from pydenticore.exc import ArgumentNoneException
-from pydenticore.interfaces.stores import IRoleClaimStore, IRoleStore
-from pydenticore.security.claims import Claim
-from pydenticore.types import TRole, TRoleClaim
+from pydentity import IdentityResult
+from pydentity.exc import ArgumentNoneException
+from pydentity.interfaces.stores import IRoleClaimStore, IRoleStore
+from pydentity.security.claims import Claim
+from pydentity.types import TRole, TRoleClaim
 from tortoise.backends.base.client import BaseDBAsyncClient
+
+from pydentity_db.models import (
+    IdentityRole,
+    IdentityRoleClaim,
+)
 
 __all__ = ("RoleStore",)
 
 
 class RoleStore(IRoleClaimStore[TRole], IRoleStore[TRole], Generic[TRole]):
-    role_model: Type[TRole]
-    role_claim_model: Type[TRoleClaim]
+    role_model: Type[TRole] = IdentityRole
+    role_claim_model: Type[TRoleClaim] = IdentityRoleClaim
 
     def __init__(self, transaction: BaseDBAsyncClient = None):
         self.transaction = transaction

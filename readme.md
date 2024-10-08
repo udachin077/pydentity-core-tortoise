@@ -7,21 +7,21 @@
 ```python
 from tortoise import fields, Tortoise, run_async
 
-from pydentity_db_tortoise.models import *
+from pydentity_db.models import *
 
 
 class Order(Model):
     id = fields.IntField(primary_key=True)
     number = fields.CharField(100)
     user = fields.ForeignKeyField(
-        'models.IdentityUser',
+        'base.IdentityUser',
         to_field='id',
         on_delete=fields.CASCADE,
     )
 
 
 async def main():
-    await Tortoise.init(db_url='sqlite://db.sqlite3', modules={'models': ['__main__']})
+    await Tortoise.init(db_url='sqlite://db.sqlite3', modules={'base': ['__main__']})
     await Tortoise.generate_schemas()
 
 

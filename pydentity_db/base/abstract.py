@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from pydenticore.types import GUID, TKey
+from pydentity.types import GUID, TKey
 from tortoise import fields
 
-from pydentity_db_tortoise.fields import ProtectedPersonalDataField
-from pydentity_db_tortoise.models.base import Model
+from pydentity_db.base.model import Model
+from pydentity_db.fields import ProtectedPersonalDataField
 
 __all__ = (
     'AbstractIdentityUser',
@@ -54,11 +54,14 @@ class AbstractIdentityUser(Model):
         two_factor_enabled = fields.BooleanField(default=False)
         username = ProtectedPersonalDataField(256, null=True)
 
-        def __str__(self):
-            return self.username or self.email or self.id
-
         class Meta:
             abstract = True
+
+    def __str__(self) -> str:
+        return self.username or self.email or self.id
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {str(self)} {id(self)}>"
 
 
 class AbstractIdentityRole(Model):
@@ -72,11 +75,14 @@ class AbstractIdentityRole(Model):
         name = fields.CharField(256, null=True)
         normalized_name = fields.CharField(256, null=True)
 
-        def __str__(self):
-            return self.name or self.id
-
         class Meta:
             abstract = True
+
+    def __str__(self):
+        return self.name or self.id
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {str(self)} {id(self)}>"
 
 
 class AbstractIdentityUserRole(Model):
@@ -86,6 +92,9 @@ class AbstractIdentityUserRole(Model):
 
     class Meta:
         abstract = True
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} ({self.user_id=}, {self.role_id=}) {id(self)}>"
 
 
 class AbstractIdentityUserClaim(Model):
@@ -100,6 +109,9 @@ class AbstractIdentityUserClaim(Model):
 
         class Meta:
             abstract = True
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} ({self.user_id=}, {self.claim_type=}) {id(self)}>"
 
 
 class AbstractIdentityUserLogin(Model):
@@ -116,6 +128,9 @@ class AbstractIdentityUserLogin(Model):
         class Meta:
             abstract = True
 
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} ({self.user_id=}, {self.login_provider=}) {id(self)}>"
+
 
 class AbstractIdentityUserToken(Model):
     if TYPE_CHECKING:
@@ -131,6 +146,9 @@ class AbstractIdentityUserToken(Model):
         class Meta:
             abstract = True
 
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} ({self.user_id=}, {self.login_provider=}) {id(self)}>"
+
 
 class AbstractIdentityRoleClaim(Model):
     if TYPE_CHECKING:
@@ -145,3 +163,6 @@ class AbstractIdentityRoleClaim(Model):
 
         class Meta:
             abstract = True
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} ({self.role_id=}, {self.claim_type=}) {id(self)}>"

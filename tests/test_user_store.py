@@ -3,20 +3,20 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from pydenticore import UserLoginInfo
-from pydenticore.security.claims import Claim
+from pydentity import UserLoginInfo
+from pydentity.security.claims import Claim
 from tortoise import Tortoise
 from tortoise.exceptions import IntegrityError
 
-from pydentity_db_tortoise.models import *
-from pydentity_db_tortoise.stores.user_store import UserStore
+from pydentity_db.models import *
+from pydentity_db.stores.user_store import UserStore
 
 
 @pytest_asyncio.fixture(scope='session')
 async def store() -> AsyncGenerator[UserStore, None]:
     await Tortoise.init(
         db_url="sqlite://:memory:",
-        modules={"models": ["pydentity_db_tortoise.models"]},
+        modules={"models": ["pydentity_db.models"]},
     )
     await Tortoise.generate_schemas()
     UserStore.user_model = IdentityUser

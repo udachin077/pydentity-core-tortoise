@@ -1,6 +1,6 @@
 from typing import override
 
-from pydenticore.interfaces import IPersonalDataProtector
+from pydentity.interfaces import IPersonalDataProtector
 from tortoise.fields import CharField
 
 

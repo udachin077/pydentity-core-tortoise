@@ -3,19 +3,19 @@ from uuid import uuid4
 
 import pytest
 import pytest_asyncio
-from pydenticore.security.claims import Claim
+from pydentity.security.claims import Claim
 from tortoise import Tortoise
 from tortoise.exceptions import IntegrityError
 
-from pydentity_db_tortoise.models import IdentityRole, IdentityRoleClaim
-from pydentity_db_tortoise.stores.role_store import RoleStore
+from pydentity_db.models import IdentityRole, IdentityRoleClaim
+from pydentity_db.stores.role_store import RoleStore
 
 
 @pytest_asyncio.fixture(scope='session')
 async def store() -> AsyncGenerator[RoleStore, None]:
     await Tortoise.init(
         db_url="sqlite://:memory:",
-        modules={"models": ["pydentity_db_tortoise.models"]},
+        modules={"models": ["pydentity_db.models"]},
     )
     await Tortoise.generate_schemas()
     RoleStore.role_model = IdentityRole

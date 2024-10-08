@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Type, Generic, Final, Optional
+from typing import Type, Generic, Final, Optional, Any
 from uuid import uuid4
 
-from pydenticore import IdentityResult, UserLoginInfo
-from pydenticore.exc import ArgumentNoneException, InvalidOperationException
-from pydenticore.interfaces.stores import (
+from pydentity import IdentityResult, UserLoginInfo
+from pydentity.exc import ArgumentNoneException, InvalidOperationException
+from pydentity.interfaces.stores import (
     IUserAuthenticationTokenStore,
     IUserAuthenticatorKeyStore,
     IUserClaimStore,
@@ -12,6 +12,7 @@ from pydenticore.interfaces.stores import (
     IUserLockoutStore,
     IUserLoginStore,
     IUserPasswordStore,
+    IUserPersonalDataStore,
     IUserPhoneNumberStore,
     IUserRoleStore,
     IUserSecurityStampStore,
@@ -19,10 +20,19 @@ from pydenticore.interfaces.stores import (
     IUserTwoFactorRecoveryCodeStore,
     IUserTwoFactorStore,
 )
-from pydenticore.resources import Resources
-from pydenticore.security.claims import Claim
-from pydenticore.types import TUser, TRole, TUserRole, TUserLogin, TUserClaim, TUserToken
+from pydentity.resources import Resources
+from pydentity.security.claims import Claim
+from pydentity.types import TUser, TRole, TUserRole, TUserLogin, TUserClaim, TUserToken
 from tortoise import BaseDBAsyncClient
+
+from pydentity_db.models import (
+    IdentityRole,
+    IdentityUser,
+    IdentityUserClaim,
+    IdentityUserLogin,
+    IdentityUserRole,
+    IdentityUserToken,
+)
 
 __all__ = ("UserStore",)
 
@@ -35,6 +45,7 @@ class UserStore(
     IUserLockoutStore[TUser],
     IUserLoginStore[TUser],
     IUserPasswordStore[TUser],
+    IUserPersonalDataStore[TUser],
     IUserPhoneNumberStore[TUser],
     IUserRoleStore[TUser],
     IUserSecurityStampStore[TUser],
@@ -43,12 +54,12 @@ class UserStore(
     IUserStore[TUser],
     Generic[TUser]
 ):
-    user_model: Type[TUser]
-    role_model: Type[TRole]
-    user_role_model: Type[TUserRole]
-    user_claim_model: Type[TUserClaim]
-    user_login_model: Type[TUserLogin]
-    user_token_model: Type[TUserToken]
+    user_model: Type[TUser] = IdentityUser
+    role_model: Type[TRole] = IdentityRole
+    user_role_model: Type[TUserRole] = IdentityUserRole
+    user_claim_model: Type[TUserClaim] = IdentityUserClaim
+    user_login_model: Type[TUserLogin] = IdentityUserLogin
+    user_token_model: Type[TUserToken] = IdentityUserToken
 
     INTERNAL_LOGIN_PROVIDER: Final[str] = "[Pydentity:UserStore]"
     AUTHENTICATOR_KEY_TOKEN_NAME: Final[str] = "[Pydentity:AuthenticatorKey]"
@@ -513,6 +524,15 @@ class UserStore(
             user_id=user.id,
             claim_type=claim.type,
             claim_value=claim.value
+        )
+
+    async def get_personal_data(self, user: TUser) -> dict[str, Any] | None:
+        if hasattr(user.Meta, 'personal_data'):
+            return {p: getattr(user, p) for p in getattr(user.Meta, 'personal_data')}
+
+        raise ValueError(
+            f"The model '{type(user)}' does not support receiving personal data. "
+            f"The Meta must have the 'personal_data' attribute, which lists the fields related to personal data."
         )
 
     def _create_claim(self, model: TUserClaim) -> Claim:  # noqa

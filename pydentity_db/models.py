@@ -1,8 +1,8 @@
 from uuid import uuid4
 
-from tortoise import fields as f, indexes
+from tortoise import fields, indexes
 
-from pydentity_db_tortoise.models.abstract import (
+from pydentity_db.base.abstract import (
     AbstractIdentityUser,
     AbstractIdentityRole,
     AbstractIdentityUserRole,
@@ -11,7 +11,7 @@ from pydentity_db_tortoise.models.abstract import (
     AbstractIdentityUserToken,
     AbstractIdentityRoleClaim
 )
-from pydentity_db_tortoise.models.base import Model
+from pydentity_db.base.model import Model
 
 __all__ = (
     'IdentityRole',
@@ -25,33 +25,31 @@ __all__ = (
 )
 
 
+class PersonalDataMixin:
+    def __getattr__(self, item):
+        if item == "__personal_data__":
+            return getattr(self.Meta, "personal_data", ())
+        raise AttributeError(f"{self.__class__.__name__!r} object has no attribute '{item!r}'")
+
+
 class UniqueIndex(indexes.Index):
     INDEX_TYPE = 'UNIQUE'
 
 
-class IdentityUser(AbstractIdentityUser):
+class IdentityUser(AbstractIdentityUser, PersonalDataMixin):
     """The default implementation of AbstractIdentityUser which uses a string as a primary key."""
 
-    id = f.CharField(450, primary_key=True)
-    roles: f.ManyToManyRelation['IdentityRole'] = f.ManyToManyField(
+    id = fields.CharField(450, primary_key=True)
+    roles: fields.ManyToManyRelation['IdentityRole'] = fields.ManyToManyField(
         'models.IdentityRole',
         related_name='users',
         through='pydentity_user_roles',
         forward_key='role_id',
         backward_key='user_id'
     )
-    claims: f.ReverseRelation['IdentityUserClaim']
-    logins: f.ReverseRelation['IdentityUserLogin']
-    tokens: f.ReverseRelation['IdentityUserToken']
-
-    def __init__(self, email: str, username: str | None = None, **kwargs):
-        super().__init__(
-            id=str(uuid4()),
-            email=email,
-            username=username,
-            security_stamp=str(uuid4()),
-            **kwargs
-        )
+    claims: fields.ReverseRelation['IdentityUserClaim']
+    logins: fields.ReverseRelation['IdentityUserLogin']
+    tokens: fields.ReverseRelation['IdentityUserToken']
 
     class Meta:
         table = 'pydentity_users'
@@ -60,21 +58,32 @@ class IdentityUser(AbstractIdentityUser):
             UniqueIndex(fields=('normalized_email',), name='idx_pydentity_users_normalized_email'),
             UniqueIndex(fields=('normalized_username',), name='idx_pydentity_users_normalized_username'),
         )
+        personal_data = (
+            'id',
+            'username',
+            'email',
+            'email_confirmed',
+            'phone_number',
+            'phone_number_confirmed',
+            'two_factor_enabled',
+        )
+
+    def __init__(self, email: str, username: str | None = None, **kwargs) -> None:
+        super().__init__(
+            id=str(uuid4()),
+            email=email,
+            username=username,
+            security_stamp=str(uuid4()),
+            **kwargs
+        )
 
 
 class IdentityRole(AbstractIdentityRole):
     """The default implementation of AbstractIdentityRole which uses a string as the primary key."""
 
-    id = f.CharField(450, primary_key=True)
-    claims: f.ReverseRelation['IdentityRoleClaim']
-    users: f.ReverseRelation['IdentityUser']
-
-    def __init__(self, name: str, **kwargs):
-        super().__init__(
-            id=str(uuid4()),
-            name=name,
-            **kwargs
-        )
+    id = fields.CharField(450, primary_key=True)
+    claims: fields.ReverseRelation['IdentityRoleClaim']
+    users: fields.ReverseRelation['IdentityUser']
 
     class Meta:
         table = 'pydentity_roles'
@@ -83,19 +92,22 @@ class IdentityRole(AbstractIdentityRole):
             UniqueIndex(fields=('normalized_name',), name='idx_pydentity_roles_normalized_name'),
         )
 
+    def __init__(self, name: str, **kwargs) -> None:
+        super(AbstractIdentityRole, self).__init__(id=str(uuid4()), name=name, **kwargs)
+
 
 class IdentityUserRole(AbstractIdentityUserRole):
     """Represents the link between a user and a role."""
 
-    user = f.ForeignKeyField(
+    user = fields.ForeignKeyField(
         'models.IdentityUser',
         to_field='id',
-        on_delete=f.CASCADE
+        on_delete=fields.CASCADE
     )
-    role = f.ForeignKeyField(
+    role = fields.ForeignKeyField(
         'models.IdentityRole',
         to_field='id',
-        on_delete=f.CASCADE
+        on_delete=fields.CASCADE
     )
 
     class Meta:
@@ -106,10 +118,10 @@ class IdentityUserRole(AbstractIdentityUserRole):
 class IdentityUserClaim(AbstractIdentityUserClaim):
     """Represents a claim that a user possesses."""
 
-    user = f.ForeignKeyField(
+    user = fields.ForeignKeyField(
         'models.IdentityUser',
         to_field='id',
-        on_delete=f.CASCADE,
+        on_delete=fields.CASCADE,
         related_name='claims'
     )
 
@@ -120,10 +132,10 @@ class IdentityUserClaim(AbstractIdentityUserClaim):
 class IdentityUserLogin(AbstractIdentityUserLogin):
     """Represents a login and its associated provider for a user."""
 
-    user = f.ForeignKeyField(
+    user = fields.ForeignKeyField(
         'models.IdentityUser',
         to_field='id',
-        on_delete=f.CASCADE,
+        on_delete=fields.CASCADE,
         related_name='logins'
     )
 
@@ -138,10 +150,10 @@ class IdentityUserLogin(AbstractIdentityUserLogin):
 class IdentityUserToken(AbstractIdentityUserToken):
     """Represents an authentication token for a user."""
 
-    user = f.ForeignKeyField(
+    user = fields.ForeignKeyField(
         'models.IdentityUser',
         to_field='id',
-        on_delete=f.CASCADE,
+        on_delete=fields.CASCADE,
         related_name='tokens'
     )
 
@@ -156,10 +168,10 @@ class IdentityUserToken(AbstractIdentityUserToken):
 class IdentityRoleClaim(AbstractIdentityRoleClaim):
     """Represents a claim that is granted to all users within a role."""
 
-    role = f.ForeignKeyField(
+    role = fields.ForeignKeyField(
         'models.IdentityRole',
         to_field='id',
-        on_delete=f.CASCADE,
+        on_delete=fields.CASCADE,
         related_name='claims'
     )
 
