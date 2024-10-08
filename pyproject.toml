@@ -7,6 +7,7 @@ license = "MIT"
 homepage = "https://github.com/udachin077/pydentity-core-tortoise"
 repository = "https://github.com/udachin077/pydentity-core-tortoise.git"
 exclude = ["tests", "example"]
+packages = [{ include = "pydentity_db", from = "." }]
 
 [tool.poetry.dependencies]
 python = "^3.12"
