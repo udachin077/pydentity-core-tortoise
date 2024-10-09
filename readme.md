@@ -1,6 +1,6 @@
 ## Installation
 
-    $ pip install pydentity-db-tortoise
+    $ pip install pydentity-core-tortoise
 
 ## Example
 
