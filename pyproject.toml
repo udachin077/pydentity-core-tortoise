@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydentity-core-tortoise"
-version = "0.1.1"
+version = "0.1.2"
 description = "Database adapter for TortoiseORM."
 authors = ["udachin077 <pypi.udachin@yandex.ru>"]
 license = "MIT"
